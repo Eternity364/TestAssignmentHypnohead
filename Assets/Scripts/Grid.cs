@@ -1,0 +1,328 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Events;
+
+public class Grid : MonoBehaviour
+{
+    [SerializeField] private CommonParameters commonParameters;
+    [SerializeField] private ItemField itemField;
+    [SerializeField] private Transform tilePrefab;
+    [SerializeField] private int referenceSize = 8;
+    [SerializeField] private int width = 8;
+    [SerializeField] private int height = 8;
+    [SerializeField] private List<ResourceModificator> resourceModificatorTypes;
+    [SerializeField] private List<int> zoneWidths = new List<int> { 1, 1, 999 };
+
+    public UnityAction OnItemsNumberChanged;
+    public IReadOnlyList<Item> Items => items.AsReadOnly();
+    public IReadOnlyList<ResourceModificator> ResourceModificators => resourceModificatorTypes.AsReadOnly();
+    public Dictionary<Item, Vector2Int> ResourceCells => new Dictionary<Item, Vector2Int>(resourceCells);
+
+    private List<Transform> tiles = new List<Transform>();
+    // List of all items
+    private List<Item> items = new List<Item>();
+    // List of which item occupies which cell
+    private List<Item> values = new List<Item>();
+    private Dictionary<Item, Vector2Int> resourceCells = new Dictionary<Item, Vector2Int>();
+    private List<ResourceModificator> resourceModificators = new List<ResourceModificator>();
+    private List<Item> itemsToDestroy = new List<Item>();
+    private float lastCellSize;
+    private int lastWidth;
+    private int lastHeight;
+    bool destroyBlock = false;
+
+    public void AddItem(Item item)
+    {
+        items.Add(item);
+        item.transform.SetParent(transform);
+        item.SetInputActive(false);
+        Vector2Int cell = GetCellUnderMouse();
+        Vector2Int centralCell = item.GetCentralCell();
+
+        // Calculate the top-left cell where the item should be placed
+        int startX = cell.x - centralCell.x;
+        int startY = cell.y - centralCell.y;
+
+        item.transform.localPosition = GetCellPosition(startX, startY);
+
+        for (int x = 0; x < item.Shape.shape.GetLength(0); x++)
+        {
+            for (int y = 0; y < item.Shape.shape.GetLength(1); y++)
+            {
+                if (item.Shape.shape[x, y] == 1)
+                {
+                    int gridX = startX + x;
+                    int gridY = startY + y;
+
+                    if (gridX < 0 || gridX >= width || gridY < 0 || gridY >= height)
+                        continue;
+
+                    int index = gridX * height + gridY;
+                    if (values[index] != null)
+                    {
+                        RemoveItem(values[index], false, false);
+                    }
+
+                    if (centralCell == new Vector2Int(x, y))
+                    {
+                        resourceCells[item] = new Vector2Int(gridX, gridY);
+                    }
+
+                    values[index] = item;
+                }
+            }
+        }
+        OnItemsNumberChanged?.Invoke();
+    }
+
+    public float GetCellSize()
+    {
+        float multiplicator = 1f;
+        if (width > referenceSize || height > referenceSize)
+        {
+            multiplicator = (float)referenceSize / (float)Mathf.Max(width, height);
+        }
+        return commonParameters.CellSize * multiplicator;
+    }
+
+    private void ScheduleItemForDestroying(Item item)
+    {
+        itemsToDestroy.Add(item);
+    }
+
+    private void DestroyItems()
+    {
+        foreach (Item item in itemsToDestroy)
+        {
+            DestroyImmediate(item.gameObject);
+            RemoveItemFromGrid(item);
+        }
+        itemsToDestroy.Clear();
+    }
+
+    private void RemoveItemFromGrid(Item item, bool callback = true)
+    {
+        items.Remove(item);
+        resourceCells.Remove(item);
+        for (int i = 0; i < values.Count; i++)
+        {
+            if (values[i] == item)
+                values[i] = null;
+        }
+        if (callback)
+            OnItemsNumberChanged?.Invoke();
+    }
+
+    public void RemoveItem(Item item, bool destroy, bool callback = true)
+    {
+        if (destroy)
+            ScheduleItemForDestroying(item);
+        else
+        {
+            RemoveItemFromGrid(item, callback);
+            itemField.Add(item);
+        }
+    }
+
+    public ResourceModificator GetResourceModificatorAtCell(Vector2Int cell)
+    {
+        if (cell.x < 0 || cell.x >= width || cell.y < 0 || cell.y >= height)
+            return new ResourceModificator();
+
+        return resourceModificators[cell.x * height + cell.y];
+    }
+    
+    public bool IsItemFitIntoGrid(Item item)
+    {
+        Vector2Int cell = GetCellUnderMouse();
+
+        if (cell.x == -1 || cell.y == -1)
+            return false;
+
+        for (int x = 0; x < item.Shape.shape.GetLength(0); x++)
+        {
+            for (int y = 0; y < item.Shape.shape.GetLength(1); y++)
+            {
+                if (item.Shape.shape[x, y] == 1)
+                {
+                    int gridX = cell.x + x - 1;
+                    int gridY = cell.y + y - 1;
+
+                    if (gridX < 0 || gridX >= width || gridY < 0 || gridY >= height)
+                        return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    public void IterateThroughResourceCells(Action<Item, Vector2Int> Action)
+    {
+        destroyBlock = true;
+        foreach (var kvp in resourceCells)
+        {
+            Action(kvp.Key, kvp.Value);
+        }
+        destroyBlock = false;
+    }
+
+    private Vector3 GetCellUnderMousePosition()
+    {
+        Vector2Int cell = GetCellUnderMouse();
+        if (cell.x == -1 || cell.y == -1)
+            return Vector3.zero;
+
+        return GetCellPosition(cell.x, cell.y);
+    }
+
+    private Vector3 GetCellPosition(int x, int y)
+    {
+        return new Vector3((x + 1) * GetCellSize(), (y + 1) * GetCellSize(), 0f);
+    }
+
+    private Vector2Int GetCellUnderMouse()
+    {
+        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+        int x = Mathf.FloorToInt(mouseWorldPos.x / GetCellSize() + 0.5f);
+        int y = Mathf.FloorToInt(mouseWorldPos.y / GetCellSize() + 0.5f);
+
+        if (x < 0 || x >= width || y < 0 || y >= height)
+            return new Vector2Int(-1, -1);
+
+        return new Vector2Int(x, y);
+    }
+
+    private void Update()
+    {
+        CreateTiles();
+        SetGridParameters();
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            Vector2Int cell = GetCellUnderMouse();
+            print(cell);
+        }
+
+        if (!destroyBlock)
+            DestroyItems();
+    }
+
+    private void CreateTiles()
+    {
+        if (width == lastWidth && height == lastHeight)
+            return;
+
+        for (int i = transform.childCount - 1; i >= 0; i--)
+        {
+            DestroyImmediate(transform.GetChild(i).gameObject);
+        }
+
+        tiles.Clear();
+        values.Clear();
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Transform tile = Instantiate(tilePrefab);
+                tile.SetParent(transform);
+                tiles.Add(tile);
+                values.Add(null);
+            }
+        }
+
+        lastWidth = width;
+        lastHeight = height;
+
+        PopulateResourceModificators();
+        SetGridParameters(false);
+    }
+
+    private void SetGridParameters(bool useConditions = true)
+    {
+        if (useConditions && (GetCellSize() == lastCellSize))
+            return;
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                Transform tile = tiles[x * height + y];
+
+                SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
+                if (sr != null && sr.sprite != null)
+                {
+                    sr.color = resourceModificators[x * height + y].color;
+                    float spritePixels = sr.sprite.rect.width;
+                    float spriteUnits = spritePixels / sr.sprite.pixelsPerUnit;
+                    float scale = GetCellSize() / spriteUnits;
+                    tile.localPosition = new Vector3(x * GetCellSize(), y * GetCellSize(), 0f);
+                    tile.localScale = new Vector3(scale, scale, 1f);
+                }
+            }
+        }
+
+        lastCellSize = GetCellSize();
+    }
+
+    private void PopulateResourceModificators()
+    {
+        resourceModificators.Clear();
+        int tilesCount = width * height;
+        resourceModificators.Capacity = tilesCount;
+
+        if (resourceModificatorTypes == null || resourceModificatorTypes.Count == 0)
+        {
+            Debug.LogWarning("No resourceModificatorTypes defined.");
+            for (int i = 0; i < tilesCount; i++)
+                resourceModificators.Add(new ResourceModificator());
+            return;
+        }
+
+        List<int> cum = new List<int>();
+        int sum = 0;
+        for (int i = 0; i < resourceModificatorTypes.Count; i++)
+        {
+            int w = (i < zoneWidths.Count) ? Mathf.Max(0, zoneWidths[i]) : 0;
+            sum += w;
+            cum.Add(sum);
+        }
+
+        int rings = (Mathf.Min(width, height) + 1) / 2;
+
+        bool zeroCoverage = (cum.Count == 0 || cum[cum.Count - 1] == 0);
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                int ring = Mathf.Min(Mathf.Min(x, y), Mathf.Min(width - 1 - x, height - 1 - y));
+                int typeIndex = resourceModificatorTypes.Count - 1;
+
+                if (!zeroCoverage)
+                {
+                    for (int i = 0; i < cum.Count; i++)
+                    {
+                        if (ring < cum[i])
+                        {
+                            typeIndex = i;
+                            break;
+                        }
+                    }
+                }
+
+                ResourceModificator chosen = resourceModificatorTypes[typeIndex];
+                resourceModificators.Add(chosen);
+            }
+        }
+    }
+}
+
+[Serializable]
+public struct ResourceModificator
+{
+    public Color color;
+    public float value;
+}
