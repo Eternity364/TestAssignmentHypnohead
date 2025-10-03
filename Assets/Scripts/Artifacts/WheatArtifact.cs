@@ -8,12 +8,11 @@ public class WheatArtifact : BaseArtifact
 {
     public override ResourceType AffectedType => ResourceType.Wheat;
 
-    public override void Modify(Item item, ref Dictionary<ResourceType, float> producedResources, System.Action<ResourceType, Vector3, float, bool> OnModify)
+    public override void Modify(ArtifactArgs args)
     {
-        if (item.ResourceType == AffectedType)
+        if (args.item.ResourceType == AffectedType)
         {
-            for (int i = 0; i < item.Size; i++)
-                item.StartCoroutine(InvokeWithDelay(item, OnModify, delay * i, producedResources[ResourceType.Wheat]));
+            args.OnModify(AffectedType, args.iconPosition, args.item.Size * (int)args.producedResources[AffectedType], false);
         }
     }
 }

@@ -9,11 +9,6 @@ public class PickedItemController : MonoBehaviour
     private Item pickedItem;
     private Vector2Int pickedItemCell = new Vector2Int(-1, -1);
 
-    private void Start()
-    {
-        //itemRemover.OnMouseClick += TryRemoveItem;
-    }
-
     public void SetItem(Item item)
     {
         if (item.IsPlaced)
@@ -23,12 +18,6 @@ public class PickedItemController : MonoBehaviour
         }
         pickedItem = item;
         item.transform.SetParent(transform);
-    }
-
-    private void RemoveItem()
-    {
-        grid.RemoveItem(pickedItem, true);
-        pickedItem = null;
     }
 
     private bool IsItemInsideGrid()
@@ -79,8 +68,8 @@ public class PickedItemController : MonoBehaviour
                         ReleaseItemBackToField();
                 }
             }
-            
-            if (Input.GetMouseButtonUp(1))
+
+            if (Input.GetMouseButtonUp(1) && !pickedItem.IsPlaced)
             {
                 pickedItem.Rotate();
             }

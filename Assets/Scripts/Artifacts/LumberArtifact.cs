@@ -9,15 +9,14 @@ public class LumberArtifact : BaseArtifact
 
     public override ResourceType AffectedType => ResourceType.Lumber;
 
-    public override void Modify(Item item, ref Dictionary<ResourceType, float> producedResources, System.Action<ResourceType, Vector3, float, bool> OnModify)
+    public override void Modify(ArtifactArgs args)
     {
-        
-        if (item.ResourceType == AffectedType)
+        if (args.item.ResourceType == AffectedType)
         {
-            OnModify?.Invoke(AffectedType, item.transform.position, producedResources[AffectedType], false);
+            args.OnModify(AffectedType, args.iconPosition, (int)args.producedResources[AffectedType], false);
             if  (Random.value < chance)
             {
-                OnModify?.Invoke(ResourceType.Wheat, item.transform.position, producedResources[AffectedType], true);
+                args.OnModify(ResourceType.Wheat, args.iconPosition, (int)args.producedResources[ResourceType.Wheat], true);
             }
         }
     }

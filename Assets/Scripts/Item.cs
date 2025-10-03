@@ -15,6 +15,7 @@ public class Item : MonoBehaviour
     private UnityAction<Item> OnMouseClick;
     private float cellSize;
     private bool placed = false;
+    private Vector2Int resourceCell;
 
     public ShapeData Shape => shapeData;
     public ResourceType ResourceType => resourceType;
@@ -58,6 +59,11 @@ public class Item : MonoBehaviour
         return new Vector2Int(length / 2, length / 2);
     }
 
+    public Vector2Int GetResourceCell()
+    {
+        return resourceCell;
+    }
+
     private void ProcessClickOnThis()
     {
         OnMouseClick?.Invoke(this);
@@ -90,6 +96,8 @@ public class Item : MonoBehaviour
     private void SetPositions()
     {
         Vector3 resourceIconPosition = Vector3.zero;
+        int random = Random.Range(0, shapeData.Size());
+
         int length = shapeData.shape.GetLength(0);
         for (int x = 0, i = 0; x < shapeData.shape.GetLength(0); x++)
         {
@@ -109,10 +117,13 @@ public class Item : MonoBehaviour
                         cells[i].localPosition = position;
                         cells[i].localScale = new Vector3(scale, scale, 1f);
 
-                        if (GetCentralCell() == new Vector2Int(x, y))
+                        if (i == random)
+                        {
+                            resourceCell = new Vector2Int(x, y);
                             resourceIconPosition = position;
+                        }
+                        i++;
                     }
-                    i++;
                 }
             }
         }

@@ -5,13 +5,13 @@ using UnityEngine;
 public abstract class BaseArtifact : ScriptableObject
 {
     public abstract ResourceType AffectedType { get; }
-    public abstract void Modify(Item item, ref Dictionary<ResourceType, float> producedResources, System.Action<ResourceType, Vector3, float, bool> OnModify);
+    public abstract void Modify(ArtifactArgs args);
+}
 
-    protected float delay = 0.2f;
-    
-    protected IEnumerator InvokeWithDelay(Item item, System.Action<ResourceType, Vector3, float, bool> OnModify, float delay, float amount)
-    {
-        yield return new WaitForSeconds(delay);
-        OnModify?.Invoke(AffectedType, item.transform.position, amount, false);
-    }
+public struct ArtifactArgs
+{
+    public Item item;
+    public Vector3 iconPosition;
+    public Dictionary<ResourceType, float> producedResources;
+    public System.Action<ResourceType, Vector3, int, bool> OnModify;
 }

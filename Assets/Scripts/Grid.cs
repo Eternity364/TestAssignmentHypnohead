@@ -41,11 +41,10 @@ public class Grid : MonoBehaviour
             cell = GetCellUnderMouse();
         Vector2Int centralCell = item.GetCentralCell();
 
-        // Calculate the top-left cell where the item should be placed
         int startX = cell.x - centralCell.x;
         int startY = cell.y - centralCell.y;
 
-        item.transform.localPosition = GetCellPosition(startX, startY);
+        item.transform.localPosition = GetCellPosition(new Vector2Int(startX, startY));
 
         for (int x = 0; x < item.Shape.shape.GetLength(0); x++)
         {
@@ -65,7 +64,7 @@ public class Grid : MonoBehaviour
                         RemoveItem(values[index], false, false);
                     }
 
-                    if (centralCell == new Vector2Int(x, y))
+                    if (item.GetResourceCell() == new Vector2Int(x, y))
                     {
                         resourceCells[item] = new Vector2Int(gridX, gridY);
                     }
@@ -80,6 +79,12 @@ public class Grid : MonoBehaviour
     public Vector2Int GetItemCell(Item item)
     {
         return GetCellCoordFromPosition(item.transform.localPosition);
+    }
+
+    public Vector3 GetResourceCellPosition(Item item)
+    {
+        if (!resourceCells.ContainsKey(item)) return Vector3.zero;
+        return GetCellPosition(resourceCells[item] - new Vector2Int(1, 1)) + transform.position;
     }
 
     public float GetCellSize()
@@ -182,12 +187,12 @@ public class Grid : MonoBehaviour
         if (cell.x == -1 || cell.y == -1)
             return Vector3.zero;
 
-        return GetCellPosition(cell.x, cell.y);
+        return GetCellPosition(cell);
     }
 
-    private Vector3 GetCellPosition(int x, int y)
+    private Vector3 GetCellPosition(Vector2Int cell)
     {
-        return new Vector3((x + 1) * GetCellSize(), (y + 1) * GetCellSize(), 0f);
+        return new Vector3((cell.x + 1) * GetCellSize(), (cell.y + 1) * GetCellSize(), 0f);
     }
 
     private Vector2Int GetCellCoordFromPosition(Vector3 pos) {

@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UI;
 
 public enum ResourceType
 {
@@ -76,13 +78,19 @@ public class ResourceManager : MonoBehaviour
                 };
                 foreach (var artifact in activeArtifacts.Where(a => a.Value).Select(a => a.Key))
                 {
-                    artifact.Modify(item, ref produced, GatherResource);
+                    artifact.Modify(new ArtifactArgs
+                    {
+                        item = item,
+                        iconPosition = grid.GetResourceCellPosition(item),
+                        producedResources = produced,
+                        OnModify = GatherResource
+                    });
                 }
 
                 foreach (var kvp in produced)
                 {
                     if (!activeArtifacts[artifactByType[kvp.Key]])
-                        GatherResource(kvp.Key, item.transform.position, kvp.Value, false);
+                        GatherResource(kvp.Key, grid.GetResourceCellPosition(item), (int)kvp.Value, false);
                 }
 
                 ResetGatherDelay(item);
@@ -92,10 +100,10 @@ public class ResourceManager : MonoBehaviour
         ActivateArtifacts();
     }
 
-    private void GatherResource(ResourceType resourceType, Vector3 position, float amount, bool alternativeMode)
+    private void GatherResource(ResourceType resourceType, Vector3 position, int amount, bool alternativeMode)
     {
         resources[resourceType] += amount;
-        CreateOnResourceChangeAnimation(resourceType, position, alternativeMode);
+        CreateOnResourceChangeAnimation(resourceType, position, amount, alternativeMode);
         OnResourceGathered?.Invoke(resourceType, amount);
     }
 
@@ -130,9 +138,12 @@ public class ResourceManager : MonoBehaviour
         gatherCurrentDelays[item] = delay;
     }
 
-    private void CreateOnResourceChangeAnimation(ResourceType resourceType, Vector3 position, bool alternativeMode = false)
+    private void CreateOnResourceChangeAnimation(ResourceType resourceType, Vector3 position, int amount, bool alternativeMode = false)
     {
         Transform animation = itemFactory.CreateResourceIcon(resourceType);
+        TextMeshProUGUI text = animation.GetComponentInChildren<TextMeshProUGUI>(true);
+        text.text = "+" + amount.ToString();
+        text.gameObject.SetActive(true);
 
         Vector3 finishPosition = position + Vector3.up * grid.GetCellSize();
         if (alternativeMode)
@@ -140,7 +151,7 @@ public class ResourceManager : MonoBehaviour
             if (resourceType == ResourceType.Wheat)
                 finishPosition += Vector3.left * grid.GetCellSize();
         }
-        
+
         animation.SetParent(transform);
         position.z = -0.001f;
         animation.position = position;
