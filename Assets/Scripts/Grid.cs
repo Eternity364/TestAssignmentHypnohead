@@ -73,6 +73,8 @@ public class Grid : MonoBehaviour
                 }
             }
         }
+        float modificatorValue = GetResourceModificatorAtCell(resourceCells[item]).value;
+        item.SetResourceGatheringAnimationActive(modificatorValue > 0, modificatorValue);
         OnItemsNumberChanged?.Invoke();
     }
 
@@ -99,6 +101,7 @@ public class Grid : MonoBehaviour
 
     public void RemoveItem(Item item, bool destroy, bool callback = true, bool returnToItemField = true)
     {
+        item.SetResourceGatheringAnimationActive(false, 0);
         if (destroy)
             ScheduleItemForDestroying(item);
         else

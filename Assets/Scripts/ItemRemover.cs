@@ -10,13 +10,18 @@ public class ItemRemover : MonoBehaviour
 
     private bool isEntered = false;
 
+    public void SetStatus(bool status)
+    {
+        enteredStatus.SetActive(status);
+        isEntered = status;
+    }   
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         Item item = collision.GetComponentInParent<Item>();
         if (item != null && item.IsPlaced)
         {
-            enteredStatus.SetActive(true);
-            isEntered = true;
+            SetStatus(true);
         }
     }
 
@@ -25,8 +30,7 @@ public class ItemRemover : MonoBehaviour
         Item item = collision.GetComponentInParent<Item>();
         if (item != null && item.IsPlaced)
         {
-            enteredStatus.SetActive(false);
-            isEntered = false;
+            SetStatus(false);
         }
     }
 }

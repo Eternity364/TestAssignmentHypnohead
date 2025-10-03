@@ -15,7 +15,8 @@ public class Item : MonoBehaviour
     private UnityAction<Item> OnMouseClick;
     private float cellSize;
     private bool placed = false;
-    private Vector2Int resourceCell;
+    private Vector2Int resourceCellcoord;
+    private Cell resourceCell;
 
     public ShapeData Shape => shapeData;
     public ResourceType ResourceType => resourceType;
@@ -61,7 +62,12 @@ public class Item : MonoBehaviour
 
     public Vector2Int GetResourceCell()
     {
-        return resourceCell;
+        return resourceCellcoord;
+    }
+
+    public void SetResourceGatheringAnimationActive(bool active, float speedMultiplier = 0)
+    {
+        resourceCell.SetAnimationActive(active, speedMultiplier);
     }
 
     private void ProcessClickOnThis()
@@ -95,40 +101,33 @@ public class Item : MonoBehaviour
 
     private void SetPositions()
     {
-        Vector3 resourceIconPosition = Vector3.zero;
         int random = Random.Range(0, shapeData.Size());
-
         int length = shapeData.shape.GetLength(0);
+
         for (int x = 0, i = 0; x < shapeData.shape.GetLength(0); x++)
         {
             for (int y = 0; y < shapeData.shape.GetLength(1); y++)
             {
                 if (shapeData.shape[x, y] == 1)
                 {
-                    cells[i].localPosition = new Vector3(x, y, 0);
-                    SpriteRenderer sr = cells[i].GetComponent<SpriteRenderer>();
-                    if (sr != null && sr.sprite != null)
-                    {
-                        sr.color = color;
-                        float spritePixels = sr.sprite.rect.width;
-                        float spriteUnits = spritePixels / sr.sprite.pixelsPerUnit;
-                        float scale = cellSize / spriteUnits;
-                        Vector3 position = new Vector3((x - length / 2) * cellSize, (y - length / 2) * cellSize, 0f);
-                        cells[i].localPosition = position;
-                        cells[i].localScale = new Vector3(scale, scale, 1f);
+                    Vector3 position = new Vector3((x - length / 2) * cellSize, (y - length / 2) * cellSize, 0f);
+                    cells[i].GetComponent<Cell>().Init(color, position, cellSize);
 
-                        if (i == random)
-                        {
-                            resourceCell = new Vector2Int(x, y);
-                            resourceIconPosition = position;
-                        }
-                        i++;
+                    if (i == random)
+                    {
+                        SetResourceCell(new Vector2Int(x, y), position, cells[i].gameObject);
                     }
+                    i++;
                 }
             }
         }
+    }
 
-        resourceIconPosition.z = -0.0001f;
-        resourceIcon.localPosition = resourceIconPosition;
+    private void SetResourceCell(Vector2Int coord, Vector3 position, GameObject cell) {
+
+        resourceCellcoord = coord;
+        position.z = -0.0001f;
+        resourceIcon.localPosition = position;
+        resourceCell = cell.GetComponent<Cell>();
     }
 }

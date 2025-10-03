@@ -59,14 +59,15 @@ public class PickedItemController : MonoBehaviour
                     ReleaseItemToGrid();
                     if (entered)
                         grid.RemoveItem(item, true);
+                    itemRemover.SetStatus(false);
                 }
-                else
-                {
-                    if (IsItemInsideGrid())
-                        ReleaseItemToGrid();
                     else
-                        ReleaseItemBackToField();
-                }
+                    {
+                        if (IsItemInsideGrid())
+                            ReleaseItemToGrid();
+                        else
+                            ReleaseItemBackToField();
+                    }
             }
 
             if (Input.GetMouseButtonUp(1) && !pickedItem.IsPlaced)

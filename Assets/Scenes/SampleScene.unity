@@ -1155,6 +1155,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8675a4f54d570b349977f2bafc671043, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  animationObj: {fileID: 0}
+  back: {fileID: 0}
+  pingPongDuration: 1
+  playOnStart: 1
 --- !u!1 &1319529704
 GameObject:
   m_ObjectHideFlags: 0
