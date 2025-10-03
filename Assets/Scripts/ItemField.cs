@@ -20,17 +20,23 @@ public class ItemField : MonoBehaviour
         constraints = new Rect(-width / 2, -height / 2, width, height);
         for (int i = 0; i < count; i++)
         {
-            Item item = itemFactory.Create(GerRandomPosition(), grid.GetCellSize(), ProcessClickOnItem);
-            SetZPosition(item.transform);
+            CreateNewItem();
         }
     }
 
     public void Add(Item item)
     {
+        item.SetPlacedStatus(false);
         item.transform.SetParent(transform);
         item.transform.localPosition = GerRandomPosition();
         SetZPosition(item.transform);
         item.SetInputActive(true);
+    }
+
+    public void CreateNewItem()
+    {
+        Item item = itemFactory.Create(GerRandomPosition(), grid.GetCellSize(), ProcessClickOnItem);
+        SetZPosition(item.transform);
     }
 
     private void SetZPosition(Transform item)

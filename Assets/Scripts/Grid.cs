@@ -32,12 +32,13 @@ public class Grid : MonoBehaviour
     private int lastHeight;
     bool destroyBlock = false;
 
-    public void AddItem(Item item)
+    public void AddItem(Item item, Vector2Int cell)
     {
         items.Add(item);
         item.transform.SetParent(transform);
-        item.SetInputActive(false);
-        Vector2Int cell = GetCellUnderMouse();
+        item.SetPlacedStatus(true);
+        if (cell == new Vector2Int(-1, -1))
+            cell = GetCellUnderMouse();
         Vector2Int centralCell = item.GetCentralCell();
 
         // Calculate the top-left cell where the item should be placed
@@ -76,6 +77,11 @@ public class Grid : MonoBehaviour
         OnItemsNumberChanged?.Invoke();
     }
 
+    public Vector2Int GetItemCell(Item item)
+    {
+        return GetCellCoordFromPosition(item.transform.localPosition);
+    }
+
     public float GetCellSize()
     {
         float multiplicator = 1f;
@@ -86,42 +92,15 @@ public class Grid : MonoBehaviour
         return commonParameters.CellSize * multiplicator;
     }
 
-    private void ScheduleItemForDestroying(Item item)
-    {
-        itemsToDestroy.Add(item);
-    }
-
-    private void DestroyItems()
-    {
-        foreach (Item item in itemsToDestroy)
-        {
-            DestroyImmediate(item.gameObject);
-            RemoveItemFromGrid(item);
-        }
-        itemsToDestroy.Clear();
-    }
-
-    private void RemoveItemFromGrid(Item item, bool callback = true)
-    {
-        items.Remove(item);
-        resourceCells.Remove(item);
-        for (int i = 0; i < values.Count; i++)
-        {
-            if (values[i] == item)
-                values[i] = null;
-        }
-        if (callback)
-            OnItemsNumberChanged?.Invoke();
-    }
-
-    public void RemoveItem(Item item, bool destroy, bool callback = true)
+    public void RemoveItem(Item item, bool destroy, bool callback = true, bool returnToItemField = true)
     {
         if (destroy)
             ScheduleItemForDestroying(item);
         else
         {
             RemoveItemFromGrid(item, callback);
-            itemField.Add(item);
+            if (returnToItemField)
+                itemField.Add(item);
         }
     }
 
@@ -133,7 +112,7 @@ public class Grid : MonoBehaviour
         return resourceModificators[cell.x * height + cell.y];
     }
     
-    public bool IsItemFitIntoGrid(Item item)
+    public bool DoesItemFitIntoGrid(Item item)
     {
         Vector2Int cell = GetCellUnderMouse();
 
@@ -168,6 +147,35 @@ public class Grid : MonoBehaviour
         destroyBlock = false;
     }
 
+    private void ScheduleItemForDestroying(Item item)
+    {
+        itemsToDestroy.Add(item);
+    }
+
+    private void DestroyItems()
+    {
+        foreach (Item item in itemsToDestroy)
+        {
+            DestroyImmediate(item.gameObject);
+            RemoveItemFromGrid(item);
+            itemField.CreateNewItem();
+        }
+        itemsToDestroy.Clear();
+    }
+
+    private void RemoveItemFromGrid(Item item, bool callback = true)
+    {
+        items.Remove(item);
+        resourceCells.Remove(item);
+        for (int i = 0; i < values.Count; i++)
+        {
+            if (values[i] == item)
+                values[i] = null;
+        }
+        if (callback)
+            OnItemsNumberChanged?.Invoke();
+    }
+
     private Vector3 GetCellUnderMousePosition()
     {
         Vector2Int cell = GetCellUnderMouse();
@@ -182,16 +190,20 @@ public class Grid : MonoBehaviour
         return new Vector3((x + 1) * GetCellSize(), (y + 1) * GetCellSize(), 0f);
     }
 
-    private Vector2Int GetCellUnderMouse()
-    {
-        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
-        int x = Mathf.FloorToInt(mouseWorldPos.x / GetCellSize() + 0.5f);
-        int y = Mathf.FloorToInt(mouseWorldPos.y / GetCellSize() + 0.5f);
+    private Vector2Int GetCellCoordFromPosition(Vector3 pos) {
+        int x = Mathf.FloorToInt(pos.x / GetCellSize() + 0.5f);
+        int y = Mathf.FloorToInt(pos.y / GetCellSize() + 0.5f);
 
         if (x < 0 || x >= width || y < 0 || y >= height)
             return new Vector2Int(-1, -1);
 
         return new Vector2Int(x, y);
+    }
+
+    private Vector2Int GetCellUnderMouse()
+    {
+        Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition) - transform.position;
+        return GetCellCoordFromPosition(mouseWorldPos);
     }
 
     private void Update()

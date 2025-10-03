@@ -14,10 +14,12 @@ public class Item : MonoBehaviour
     private List<Transform> cells = new List<Transform>();
     private UnityAction<Item> OnMouseClick;
     private float cellSize;
+    private bool placed = false;
 
     public ShapeData Shape => shapeData;
     public ResourceType ResourceType => resourceType;
     public int Size => shapeData.Size();
+    public bool IsPlaced => placed;
 
     public void Setup(Color color, ShapeData shapeData, Transform resourceIcon, float cellSize, ResourceType resourceType, UnityAction<Item> OnMouseClick)
     {
@@ -28,6 +30,11 @@ public class Item : MonoBehaviour
         this.resourceType = resourceType;
         this.OnMouseClick = OnMouseClick;
         Init();
+    }
+
+    public void SetPlacedStatus(bool placed)
+    {
+        this.placed = placed;
     }
 
     public void Rotate()
