@@ -12,7 +12,8 @@ public class ItemFactory : MonoBehaviour
 
     public Item Create(Vector3 position, float cellSize, UnityAction<Item> OnMouseClick)
     {
-        Transform itemTransform = Instantiate(itemPrefab, parent);
+        Transform itemTransform = ObjectPool.Instance.GetObject(itemPrefab.gameObject).transform;
+        itemTransform.SetParent(parent);
         itemTransform.localPosition = position;
         Item item = itemTransform.GetComponent<Item>();
         Color color = new Color(Random.value, Random.value, Random.value);
@@ -25,10 +26,26 @@ public class ItemFactory : MonoBehaviour
         return item;
     }
 
+    public void Destroy(Item item)
+    {
+        item.Clear();
+        ObjectPool.Instance.ReturnObject(item.gameObject);
+    }
+
     public Transform CreateResourceIcon(ResourceType resourceType)
     {
         int resourceTypesCount = System.Enum.GetValues(typeof(ResourceType)).Length;
         Assert.AreEqual(resourceIconPrefabs.Count, resourceTypesCount);
-        return Instantiate(resourceIconPrefabs[(int)resourceType]);
+        GameObject obj = ObjectPool.Instance.GetObject(resourceIconPrefabs[(int)resourceType].gameObject);
+        return obj.transform;
+    }
+
+    public void DestroyResourceIcon(GameObject icon)
+    {
+        icon.GetComponentInChildren<TMPro.TextMeshProUGUI>(true).gameObject.SetActive(false);
+        Color color = icon.GetComponent<SpriteRenderer>().material.color;
+        color.a = 1;
+        icon.GetComponent<SpriteRenderer>().material.color = color;
+        ObjectPool.Instance.ReturnObject(icon);
     }
 }

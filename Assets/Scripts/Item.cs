@@ -15,7 +15,7 @@ public class Item : MonoBehaviour
     private UnityAction<Item> OnMouseClick;
     private float cellSize;
     private bool placed = false;
-    private Vector2Int resourceCellcoord;
+    private Vector2Int resourceCellcoord = new Vector2Int(-1, -1);
     private Cell resourceCell;
 
     public ShapeData Shape => shapeData;
@@ -41,7 +41,7 @@ public class Item : MonoBehaviour
 
     public void Rotate()
     {
-        shapeData.Rotate();
+        shapeData.Rotate(ref resourceCellcoord);
         SetPositions();
     }
 
@@ -70,6 +70,20 @@ public class Item : MonoBehaviour
         resourceCell.SetAnimationActive(active, speedMultiplier);
     }
 
+    public void Clear()
+    {
+        foreach (Transform cell in cells)
+        {
+            cell.GetComponent<Cell>().OnMouseClick -= ProcessClickOnThis;
+            ObjectPool.Instance.ReturnObject(cell.gameObject);
+        }
+        cells.Clear();
+        ObjectPool.Instance.ReturnObject(resourceIcon.gameObject);
+        placed = false;
+        resourceCellcoord = new Vector2Int(-1, -1);
+        resourceCell = null;
+    }
+
     private void ProcessClickOnThis()
     {
         OnMouseClick?.Invoke(this);
@@ -83,7 +97,7 @@ public class Item : MonoBehaviour
             {
                 if (shapeData.shape[x, y] == 1)
                 {
-                    Transform cell = Instantiate(cellPrefab);
+                    Transform cell = ObjectPool.Instance.GetObject(cellPrefab.gameObject).transform;
                     cell.SetParent(transform);
                     cells.Add(cell);
 
@@ -102,6 +116,8 @@ public class Item : MonoBehaviour
     private void SetPositions()
     {
         int random = Random.Range(0, shapeData.Size());
+        if (resourceCellcoord != new Vector2Int(-1, -1))
+            random = -1;
         int length = shapeData.shape.GetLength(0);
 
         for (int x = 0, i = 0; x < shapeData.shape.GetLength(0); x++)
@@ -111,11 +127,12 @@ public class Item : MonoBehaviour
                 if (shapeData.shape[x, y] == 1)
                 {
                     Vector3 position = new Vector3((x - length / 2) * cellSize, (y - length / 2) * cellSize, 0f);
-                    cells[i].GetComponent<Cell>().Init(color, position, cellSize);
+                    Cell cellComp = cells[i].GetComponent<Cell>();
+                    cellComp.Init(color, position, cellSize);
 
-                    if (i == random)
+                    if (i == random || resourceCellcoord == new Vector2Int(x, y))
                     {
-                        SetResourceCell(new Vector2Int(x, y), position, cells[i].gameObject);
+                        SetResourceCell(cellComp, new Vector2Int(x, y));
                     }
                     i++;
                 }
@@ -123,11 +140,11 @@ public class Item : MonoBehaviour
         }
     }
 
-    private void SetResourceCell(Vector2Int coord, Vector3 position, GameObject cell) {
-
-        resourceCellcoord = coord;
+    private void SetResourceCell(Cell cell, Vector2Int cellCoord) {
+        resourceCellcoord = cellCoord;
+        resourceCell = cell;
+        Vector3 position = cell.transform.localPosition;
         position.z = -0.0001f;
         resourceIcon.localPosition = position;
-        resourceCell = cell.GetComponent<Cell>();
     }
 }

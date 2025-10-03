@@ -387,6 +387,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   commonParameters: {fileID: 11400000, guid: 4c14a8fce9729244aa5066c607208e34, type: 2}
   itemField: {fileID: 340820230}
+  itemFactory: {fileID: 1876259271}
   tilePrefab: {fileID: 5683223857682129492, guid: 43efc7042beec13489baa7be336d802c, type: 3}
   referenceSize: 8
   width: 8
@@ -641,6 +642,50 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &620806950
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 620806952}
+  - component: {fileID: 620806951}
+  m_Layer: 0
+  m_Name: ObjectPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &620806951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 620806950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a0dae5ddfc20ca41ab5c1c73341a2c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &620806952
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 620806950}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.0053055, y: -1.4560018, z: -0.007631926}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1158,7 +1203,6 @@ MonoBehaviour:
   animationObj: {fileID: 0}
   back: {fileID: 0}
   pingPongDuration: 1
-  playOnStart: 1
 --- !u!1 &1319529704
 GameObject:
   m_ObjectHideFlags: 0
@@ -1957,3 +2001,4 @@ SceneRoots:
   - {fileID: 35586406}
   - {fileID: 1833822571}
   - {fileID: 1345701277}
+  - {fileID: 620806952}

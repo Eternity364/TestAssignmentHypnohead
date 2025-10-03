@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class ItemRemover : MonoBehaviour
+public class ItemRemoveChecker : MonoBehaviour
 {
     [SerializeField] GameObject enteredStatus;
 

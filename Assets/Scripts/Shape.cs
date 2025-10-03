@@ -50,7 +50,7 @@ public struct ShapeData
 {
     public int[,] shape;
 
-    public void Rotate()
+    public void Rotate(ref Vector2Int cellOfInterest)
     {
         int size = shape.GetLength(0);
         int[,] result = new int[size, size];
@@ -62,6 +62,8 @@ public struct ShapeData
                 result[x, size - y - 1] = shape[y, x];
             }
         }
+
+        cellOfInterest = new Vector2Int(cellOfInterest.y, size - 1 - cellOfInterest.x);
 
         shape = result;
     }

@@ -159,7 +159,7 @@ public class ResourceManager : MonoBehaviour
         animation.localScale = originalScale * grid.GetCellSize();
 
         animation.DOMove(finishPosition, 0.75f).SetEase(Ease.InCubic);
-        animation.GetComponent<SpriteRenderer>().material.DOFade(0, 0.75f).SetEase(Ease.InCubic).OnComplete(() => Destroy(animation.gameObject));
+        animation.GetComponent<SpriteRenderer>().material.DOFade(0, 0.75f).SetEase(Ease.InCubic).OnComplete(() => itemFactory.DestroyResourceIcon(animation.gameObject));
     }
 
     // public int GetResourceAmount(Item item)

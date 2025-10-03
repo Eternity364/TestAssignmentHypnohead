@@ -4,7 +4,7 @@ public class PickedItemController : MonoBehaviour
 {
     [SerializeField] ItemField field;
     [SerializeField] Grid grid;
-    [SerializeField] ItemRemover itemRemover;
+    [SerializeField] ItemRemoveChecker itemRemover;
 
     private Item pickedItem;
     private Vector2Int pickedItemCell = new Vector2Int(-1, -1);

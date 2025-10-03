@@ -7,6 +7,7 @@ public class Grid : MonoBehaviour
 {
     [SerializeField] private CommonParameters commonParameters;
     [SerializeField] private ItemField itemField;
+    [SerializeField] private ItemFactory itemFactory;
     [SerializeField] private Transform tilePrefab;
     [SerializeField] private int referenceSize = 8;
     [SerializeField] private int width = 8;
@@ -164,7 +165,7 @@ public class Grid : MonoBehaviour
     {
         foreach (Item item in itemsToDestroy)
         {
-            DestroyImmediate(item.gameObject);
+            itemFactory.Destroy(item);
             RemoveItemFromGrid(item);
             itemField.CreateNewItem();
         }
