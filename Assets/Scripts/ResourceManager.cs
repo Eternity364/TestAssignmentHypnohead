@@ -104,7 +104,7 @@ public class ResourceManager : MonoBehaviour
     {
         resources[resourceType] += amount;
         CreateOnResourceChangeAnimation(resourceType, position, amount, alternativeMode);
-        OnResourceGathered?.Invoke(resourceType, amount);
+        OnResourceGathered?.Invoke(resourceType, resources[resourceType]);
     }
 
     private void ActivateArtifacts()

@@ -1,41 +1,39 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UI;
 
 public class ResourcePanel : MonoBehaviour
 {
-    [SerializeField] private List<Text> resourceTexts = new List<Text>();
+    [SerializeField] private List<ResourceTexts> resourceTexts = new List<ResourceTexts>();
     [SerializeField] private ResourceManager resourceManager;
+
+    ResourceTexts[] resourceTextsArray;
 
     private void Start()
     {
         resourceManager.OnResourceGathered += OnResourceGathered;
+        Assert.AreEqual(resourceTexts.Count, System.Enum.GetValues(typeof(ResourceType)).Length);
+        resourceTextsArray = new ResourceTexts[resourceTexts.Count];
         for (int i = 0; i < resourceTexts.Count; i++)
         {
-            resourceTexts[i].text = "0";
+            int index = (int)resourceTexts[i].type;
+            resourceTextsArray[index] = resourceTexts[i];
+            resourceTextsArray[index].text.text = "0";
         }
     }
 
     private void OnResourceGathered(ResourceType resourceType, float amount)
     {
-        int index = -1;
-        switch (resourceType)
-        {
-            case ResourceType.Lumber:
-                index = 0;
-                break;
-            case ResourceType.Wheat:
-                index = 1;
-                break;
-            case ResourceType.Iron:
-                index = 2;
-                break;
-        }
-        if (index != -1 && index < resourceTexts.Count)
-        {
-            float currentAmount = float.Parse(resourceTexts[index].text);
-            resourceTexts[index].text = (currentAmount + amount).ToString();
-        }
+        resourceTextsArray[(int)resourceType].text.text = amount.ToString();
+    }
+
+    [Serializable]
+    private struct ResourceTexts
+    {
+        public ResourceType type;
+        public Text text;
     }
 }

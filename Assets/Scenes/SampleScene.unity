@@ -819,9 +819,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   resourceTexts:
-  - {fileID: 1411548084}
-  - {fileID: 1240609947}
-  - {fileID: 841116773}
+  - type: 0
+    text: {fileID: 1411548084}
+  - type: 1
+    text: {fileID: 841116773}
+  - type: 2
+    text: {fileID: 1240609947}
   resourceManager: {fileID: 35586405}
 --- !u!1 &841116771
 GameObject:
