@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Item : MonoBehaviour
+public class Item : MonoBehaviour, IClearable
 {
     [SerializeField] private Transform cellPrefab;
 
@@ -82,6 +82,11 @@ public class Item : MonoBehaviour
         placed = false;
         resourceCellcoord = new Vector2Int(-1, -1);
         resourceCell = null;
+    }
+
+    public GameObject GetGameObject()
+    {
+        return gameObject;
     }
 
     private void ProcessClickOnThis()

@@ -1719,10 +1719,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   parent: {fileID: 340820229}
   itemPrefab: {fileID: 3713651270588293520, guid: 6276803e64959a1418cf17112a0f1748, type: 3}
-  resourceIconPrefabs:
-  - {fileID: 5683223857682129492, guid: 3b41d1edfdf6b2142a87f9a282bbefbd, type: 3}
-  - {fileID: 5683223857682129492, guid: 71bae9a45ef497d4ea28e7729f07eda8, type: 3}
-  - {fileID: 5683223857682129492, guid: bbb947e13ce7c7848a7420d6a18c8a6a, type: 3}
+  resourceIconPrefab: {fileID: 4419960483894008106, guid: 71bae9a45ef497d4ea28e7729f07eda8, type: 3}
 --- !u!4 &1876259272
 Transform:
   m_ObjectHideFlags: 0

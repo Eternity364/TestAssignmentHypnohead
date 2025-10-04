@@ -140,10 +140,9 @@ public class ResourceManager : MonoBehaviour
 
     private void CreateOnResourceChangeAnimation(ResourceType resourceType, Vector3 position, int amount, bool alternativeMode = false)
     {
-        Transform animation = itemFactory.CreateResourceIcon(resourceType);
-        TextMeshProUGUI text = animation.GetComponentInChildren<TextMeshProUGUI>(true);
-        text.text = "+" + amount.ToString();
-        text.gameObject.SetActive(true);
+        Icon icon = itemFactory.CreateResourceIcon(resourceType);
+        Transform animation = icon.transform;
+        icon.SetTextActive(true, "+" + amount.ToString());
 
         Vector3 finishPosition = position + Vector3.up * grid.GetCellSize();
         if (alternativeMode)
@@ -159,7 +158,7 @@ public class ResourceManager : MonoBehaviour
         animation.localScale = originalScale * grid.GetCellSize();
 
         animation.DOMove(finishPosition, 0.75f).SetEase(Ease.InCubic);
-        animation.GetComponent<SpriteRenderer>().material.DOFade(0, 0.75f).SetEase(Ease.InCubic).OnComplete(() => itemFactory.DestroyResourceIcon(animation.gameObject));
+        animation.GetComponent<SpriteRenderer>().material.DOFade(0, 0.75f).SetEase(Ease.InCubic).OnComplete(() => itemFactory.Destroy(icon));
     }
 
     // public int GetResourceAmount(Item item)

@@ -8,7 +8,7 @@ public class ItemFactory : MonoBehaviour
 {
     [SerializeField] private Transform parent;
     [SerializeField] private Transform itemPrefab;
-    [SerializeField] private List<Transform> resourceIconPrefabs;
+    [SerializeField] private Icon resourceIconPrefab;
 
     public Item Create(Vector3 position, float cellSize, UnityAction<Item> OnMouseClick)
     {
@@ -20,32 +20,22 @@ public class ItemFactory : MonoBehaviour
         ShapeData shapeData = ShapeStorage.GetRandom;
         int resourceTypesCount = System.Enum.GetValues(typeof(ResourceType)).Length;
         ResourceType resourceType = (ResourceType)Random.Range(0, resourceTypesCount);
-        Transform resourceIcon = CreateResourceIcon(resourceType);
+        Transform resourceIcon = CreateResourceIcon(resourceType).transform;
         item.Setup(color, shapeData, resourceIcon, cellSize, resourceType, OnMouseClick);
 
         return item;
     }
 
-    public void Destroy(Item item)
+    public void Destroy(IClearable obj)
     {
-        item.Clear();
-        ObjectPool.Instance.ReturnObject(item.gameObject);
+        obj.Clear();
+        ObjectPool.Instance.ReturnObject(obj.GetGameObject());
     }
 
-    public Transform CreateResourceIcon(ResourceType resourceType)
+    public Icon CreateResourceIcon(ResourceType resourceType)
     {
-        int resourceTypesCount = System.Enum.GetValues(typeof(ResourceType)).Length;
-        Assert.AreEqual(resourceIconPrefabs.Count, resourceTypesCount);
-        GameObject obj = ObjectPool.Instance.GetObject(resourceIconPrefabs[(int)resourceType].gameObject);
-        return obj.transform;
-    }
-
-    public void DestroyResourceIcon(GameObject icon)
-    {
-        icon.GetComponentInChildren<TMPro.TextMeshProUGUI>(true).gameObject.SetActive(false);
-        Color color = icon.GetComponent<SpriteRenderer>().material.color;
-        color.a = 1;
-        icon.GetComponent<SpriteRenderer>().material.color = color;
-        ObjectPool.Instance.ReturnObject(icon);
+        Icon icon = ObjectPool.Instance.GetObject(resourceIconPrefab.gameObject).GetComponent<Icon>();
+        icon.SetIcon(resourceType);
+        return icon;
     }
 }
