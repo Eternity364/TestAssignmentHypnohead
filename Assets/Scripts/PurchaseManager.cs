@@ -35,7 +35,6 @@ public class PurchaseManager : MonoBehaviour
 
     private bool TryToPay(List<PriceEntry> priceEntries)
     {
-        return true;
         if (resourceManager.CheckIfEnoughResources(priceEntries))
         {
             resourceManager.ChangeResourceAmountBy(priceEntries);

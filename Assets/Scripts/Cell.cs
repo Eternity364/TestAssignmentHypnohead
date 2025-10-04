@@ -28,6 +28,11 @@ public class Cell : MonoBehaviour
         back.color = color;
     }
 
+    public void SetVisible(bool visible)
+    {
+        back.enabled = visible;
+    }
+
     public void SetAnimationActive(bool active, float speedMultiplier)
     {
         animationObj.SetActive(active);

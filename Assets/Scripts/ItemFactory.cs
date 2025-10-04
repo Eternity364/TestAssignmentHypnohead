@@ -17,7 +17,7 @@ public class ItemFactory : MonoBehaviour
         itemTransform.localPosition = position;
         Item item = itemTransform.GetComponent<Item>();
         Color color = new Color(Random.value, Random.value, Random.value);
-        ShapeData shapeData = ShapeStorage.GetRandom;
+        ShapeData shapeData = ShapeStorage.GetRandom();
         int resourceTypesCount = System.Enum.GetValues(typeof(ResourceType)).Length;
         ResourceType resourceType = (ResourceType)Random.Range(0, resourceTypesCount);
         Transform resourceIcon = CreateResourceIcon(resourceType).transform;

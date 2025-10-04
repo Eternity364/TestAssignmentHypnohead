@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -43,9 +44,23 @@ public static class ShapeStorage
                 }
     };
 
-    public static ShapeData GetRandom => new ShapeData { shape = shapes[Random.Range(0, shapes.Count)] };
+    private static List<ShapeData> shapeDataList = new List<ShapeData>();
+
+    public static void SetShapeDataList(List<ShapeData> shapeDataList)
+    {
+        ShapeStorage.shapeDataList = shapeDataList;
+    }
+
+    public static ShapeData GetRandom()
+    {
+        if (shapeDataList.Count == 0)
+            return new ShapeData { shape = shapes[UnityEngine.Random.Range(0, shapes.Count)] };
+        else
+            return shapeDataList[UnityEngine.Random.Range(0, shapeDataList.Count)];
+    }
 }
 
+[Serializable]
 public struct ShapeData
 {
     public int[,] shape;
@@ -67,7 +82,7 @@ public struct ShapeData
 
         shape = result;
     }
-    
+
     public int Size()
     {
         int count = 0;
