@@ -266,13 +266,20 @@ MonoBehaviour:
   resourceManager: {fileID: 35586405}
   itemField: {fileID: 340820230}
   multiplierGrowthRate: 1.2
-  initialPrice:
+  initialArtifactPrice:
+  - resourceType: 1
+    amount: -3
   - resourceType: 0
-    amount: -5
+    amount: -4
   - resourceType: 2
     amount: -5
+  initialRemoveItemPrice:
   - resourceType: 1
-    amount: -5
+    amount: -1
+  - resourceType: 0
+    amount: -1
+  - resourceType: 2
+    amount: -1
 --- !u!1 &116072635
 GameObject:
   m_ObjectHideFlags: 0
@@ -1084,6 +1091,7 @@ MonoBehaviour:
   field: {fileID: 340820230}
   grid: {fileID: 353158792}
   itemRemover: {fileID: 2852309660741031094}
+  purchaseManager: {fileID: 35586407}
 --- !u!4 &1136979450
 Transform:
   m_ObjectHideFlags: 0

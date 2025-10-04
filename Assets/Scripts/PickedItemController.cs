@@ -5,6 +5,7 @@ public class PickedItemController : MonoBehaviour
     [SerializeField] ItemField field;
     [SerializeField] Grid grid;
     [SerializeField] ItemRemoveChecker itemRemover;
+    [SerializeField] PurchaseManager purchaseManager;
 
     private Item pickedItem;
     private Vector2Int pickedItemCell = new Vector2Int(-1, -1);
@@ -57,7 +58,7 @@ public class PickedItemController : MonoBehaviour
                     bool entered = itemRemover.IsEntered;
                     Item item = pickedItem;
                     ReleaseItemToGrid();
-                    if (entered)
+                    if (entered && purchaseManager.TryToPayForRemoveItem())
                         grid.RemoveItem(item, true);
                     itemRemover.SetStatus(false);
                 }

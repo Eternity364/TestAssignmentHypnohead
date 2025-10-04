@@ -10,7 +10,8 @@ public class PurchaseManager : MonoBehaviour
     [SerializeField] private ItemField itemField;
     [SerializeField] private float multiplierGrowthRate = 1.2f;
     // prices should be stored as negative
-    [SerializeField] private List<PriceEntry> initialPrice;
+    [SerializeField] private List<PriceEntry> initialArtifactPrice;
+    [SerializeField] private List<PriceEntry> initialRemoveItemPrice;
 
     private HashSet<BaseArtifact> purchasedArtifacts = new();
     private float multiplier = 1f;
@@ -18,15 +19,25 @@ public class PurchaseManager : MonoBehaviour
 
     private void Start()
     {
-        incrementedPrice = new List<PriceEntry>(initialPrice.Count);
+        incrementedPrice = new List<PriceEntry>(initialArtifactPrice.Count);
     }
 
-    public bool TryToPay()
+    public bool TryToPayForRemoveItem()
+    {
+        return TryToPay(initialRemoveItemPrice);
+    }
+
+    public bool TryToPayForArtifact()
     {
         CalculateIncrementedPrice();
-        if (resourceManager.CheckIfEnoughResources(incrementedPrice))
+        return TryToPay(incrementedPrice);
+    }
+
+    private bool TryToPay(List<PriceEntry> priceEntries)
+    {
+        if (resourceManager.CheckIfEnoughResources(priceEntries))
         {
-            resourceManager.ChangeResourceAmountBy(incrementedPrice);
+            resourceManager.ChangeResourceAmountBy(priceEntries);
             return true;
         }
         else
@@ -37,7 +48,7 @@ public class PurchaseManager : MonoBehaviour
 
     public void Buy()
     {
-        if (TryToPay())
+        if (TryToPayForArtifact())
         {
             HashSet<BaseArtifact> purchasableArtifacts = resourceManager.Artifacts;
             purchasableArtifacts.ExceptWith(purchasedArtifacts);
@@ -56,9 +67,9 @@ public class PurchaseManager : MonoBehaviour
     private void CalculateIncrementedPrice()
     {
         incrementedPrice.Clear();
-        for (int i = 0; i < initialPrice.Count; i++)
+        for (int i = 0; i < initialArtifactPrice.Count; i++)
         {
-            PriceEntry entry = initialPrice[i];
+            PriceEntry entry = initialArtifactPrice[i];
             entry.amount = Mathf.CeilToInt(entry.amount * multiplier);
             incrementedPrice.Add(entry);
         }
