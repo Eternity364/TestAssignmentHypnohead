@@ -28,7 +28,7 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<ResourceType, float> resources = new Dictionary<ResourceType, float>();
     private Dictionary<Item, float> gatherCurrentDelays = new Dictionary<Item, float>();
     private Dictionary<ResourceType, BaseArtifact> artifactByType = new Dictionary<ResourceType, BaseArtifact>();
-    private Dictionary<BaseArtifact, bool> activeArtifacts = new Dictionary<BaseArtifact, bool>();
+    private HashSet<BaseArtifact> activeArtifacts = new HashSet<BaseArtifact>();
 
     void Start()
     {
@@ -39,7 +39,7 @@ public class ResourceManager : MonoBehaviour
         foreach (BaseArtifact artifact in artifacts)
         {
             artifactByType[artifact.AffectedType] = artifact;
-            activeArtifacts[artifact] = false;
+            activeArtifacts.Remove(artifact);
         }
         IronArtifact ironArtifact = (IronArtifact)artifactByType[ResourceType.Iron];
         ironArtifact.grid = grid;
@@ -76,7 +76,7 @@ public class ResourceManager : MonoBehaviour
                 {
                     [item.ResourceType] = 1
                 };
-                foreach (var artifact in activeArtifacts.Where(a => a.Value).Select(a => a.Key))
+                foreach (BaseArtifact artifact in activeArtifacts)
                 {
                     artifact.Modify(new ArtifactArgs
                     {
@@ -89,7 +89,7 @@ public class ResourceManager : MonoBehaviour
 
                 foreach (var kvp in produced)
                 {
-                    if (!activeArtifacts[artifactByType[kvp.Key]])
+                    if (!activeArtifacts.Contains(artifactByType[kvp.Key]))
                         GatherResource(kvp.Key, grid.GetResourceCellPosition(item), (int)kvp.Value, false);
                 }
 
@@ -111,19 +111,27 @@ public class ResourceManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Alpha1))
         {
-            activeArtifacts[artifactByType[ResourceType.Lumber]] = !activeArtifacts[artifactByType[ResourceType.Lumber]];
-            OnArtifactToggle?.Invoke(artifactByType[ResourceType.Lumber], activeArtifacts[artifactByType[ResourceType.Lumber]]);
+            ToggleArtifact(ResourceType.Lumber);
         }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
-            activeArtifacts[artifactByType[ResourceType.Wheat]] = !activeArtifacts[artifactByType[ResourceType.Wheat]];
-            OnArtifactToggle?.Invoke(artifactByType[ResourceType.Wheat], activeArtifacts[artifactByType[ResourceType.Wheat]]);
+            ToggleArtifact(ResourceType.Wheat);
         }
         if (Input.GetKeyDown(KeyCode.Alpha3))
         {
-            activeArtifacts[artifactByType[ResourceType.Iron]] = !activeArtifacts[artifactByType[ResourceType.Iron]];
-            OnArtifactToggle?.Invoke(artifactByType[ResourceType.Iron], activeArtifacts[artifactByType[ResourceType.Iron]]);
+            ToggleArtifact(ResourceType.Iron);
         }
+    }
+
+    private void ToggleArtifact(ResourceType resourceType)
+    {
+        BaseArtifact artifact = artifactByType[resourceType];
+        bool active = activeArtifacts.Contains(artifact);
+        if (active)
+            activeArtifacts.Remove(artifact);
+        else
+            activeArtifacts.Add(artifact);
+        OnArtifactToggle?.Invoke(artifact, !active);
     }
 
     private void ResetGatherDelay(Item item)
