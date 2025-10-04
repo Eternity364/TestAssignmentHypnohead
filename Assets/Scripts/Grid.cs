@@ -146,12 +146,12 @@ public class Grid : MonoBehaviour
         return true;
     }
 
-    public void IterateThroughResourceCells(Action<Item, Vector2Int> Action)
+    public void IterateThroughResourceCells(Action<Item> Action)
     {
         destroyBlock = true;
         foreach (var kvp in resourceCells)
         {
-            Action(kvp.Key, kvp.Value);
+            Action(kvp.Key);
         }
         destroyBlock = false;
     }

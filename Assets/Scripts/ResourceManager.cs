@@ -29,6 +29,7 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<Item, float> gatherCurrentDelays = new Dictionary<Item, float>();
     private Dictionary<ResourceType, BaseArtifact> artifactByType = new Dictionary<ResourceType, BaseArtifact>();
     private HashSet<BaseArtifact> activeArtifacts = new HashSet<BaseArtifact>();
+    private Dictionary<ResourceType, float> produced = new Dictionary<ResourceType, float>();
 
     void Start()
     {
@@ -67,37 +68,40 @@ public class ResourceManager : MonoBehaviour
 
     private void Update()
     {
-        grid.IterateThroughResourceCells((item, cell) =>
+        grid.IterateThroughResourceCells((item) =>
         {
-            gatherCurrentDelays[item] -= Time.deltaTime;
-            if (gatherCurrentDelays[item] <= 0)
-            {
-                var produced = new Dictionary<ResourceType, float>
-                {
-                    [item.ResourceType] = 1
-                };
-                foreach (BaseArtifact artifact in activeArtifacts)
-                {
-                    artifact.Modify(new ArtifactArgs
-                    {
-                        item = item,
-                        iconPosition = grid.GetResourceCellPosition(item),
-                        producedResources = produced,
-                        OnModify = GatherResource
-                    });
-                }
-
-                foreach (var kvp in produced)
-                {
-                    if (!activeArtifacts.Contains(artifactByType[kvp.Key]))
-                        GatherResource(kvp.Key, grid.GetResourceCellPosition(item), (int)kvp.Value, false);
-                }
-
-                ResetGatherDelay(item);
-                Debug.Log($"Gathered 1 {item.ResourceType}. Total: {resources[item.ResourceType]}");
-            }
+            ProcessResourceItem(item);
         });
         ActivateArtifacts();
+    }
+
+    private void ProcessResourceItem(Item item)
+    {
+        gatherCurrentDelays[item] -= Time.deltaTime;
+        if (gatherCurrentDelays[item] <= 0)
+        {
+            produced.Clear();
+            produced[item.ResourceType] = 1;
+
+            foreach (BaseArtifact artifact in activeArtifacts)
+            {
+                artifact.Modify(new ArtifactArgs
+                {
+                    item = item,
+                    iconPosition = grid.GetResourceCellPosition(item),
+                    producedResources = produced,
+                    OnModify = GatherResource
+                });
+            }
+
+            foreach (var kvp in produced)
+            {
+                if (!activeArtifacts.Contains(artifactByType[kvp.Key]))
+                    GatherResource(kvp.Key, grid.GetResourceCellPosition(item), (int)kvp.Value, false);
+            }
+
+            ResetGatherDelay(item);
+        }
     }
 
     private void GatherResource(ResourceType resourceType, Vector3 position, int amount, bool alternativeMode)
