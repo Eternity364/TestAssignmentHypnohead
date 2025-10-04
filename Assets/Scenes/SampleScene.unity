@@ -250,6 +250,50 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &116072635
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 116072637}
+  - component: {fileID: 116072636}
+  m_Layer: 0
+  m_Name: GameSpeedController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &116072636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 116072635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e90e7eb5b625e747a683db035238a38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &116072637
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 116072635}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.3276851, y: -4.2622766, z: -0.0025770713}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &329973641
 GameObject:
   m_ObjectHideFlags: 0
@@ -392,14 +436,19 @@ MonoBehaviour:
   referenceSize: 8
   width: 8
   height: 8
-  resourceModificatorTypes:
-  - color: {r: 0.023529414, g: 0.6117647, b: 0.6117647, a: 1}
-    value: 1
-  - color: {r: 0.20784315, g: 0.22352943, b: 0.5921569, a: 1}
-    value: 0.4
-  - color: {r: 0.74509805, g: 0.3803922, b: 0.6039216, a: 1}
-    value: 0
-  zoneWidths: 0100000001000000e7030000
+  resourceZoneParameters:
+  - modificator:
+      color: {r: 0.9433962, g: 0, b: 0, a: 1}
+      value: 0
+    width: 1
+  - modificator:
+      color: {r: 1, g: 0.90410185, b: 0, a: 1}
+      value: 0.4
+    width: 1
+  - modificator:
+      color: {r: 0, g: 1, b: 0.054290295, a: 1}
+      value: 1
+    width: 999
 --- !u!4 &353158793
 Transform:
   m_ObjectHideFlags: 0
@@ -2002,3 +2051,4 @@ SceneRoots:
   - {fileID: 1833822571}
   - {fileID: 1345701277}
   - {fileID: 620806952}
+  - {fileID: 116072637}

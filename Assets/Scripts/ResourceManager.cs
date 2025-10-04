@@ -77,7 +77,7 @@ public class ResourceManager : MonoBehaviour
 
     private void ProcessResourceItem(Item item)
     {
-        gatherCurrentDelays[item] -= Time.deltaTime;
+        gatherCurrentDelays[item] -= Time.deltaTime * GameSpeedController.Instance.Multiplier;
         if (gatherCurrentDelays[item] <= 0)
         {
             produced.Clear();
@@ -113,15 +113,15 @@ public class ResourceManager : MonoBehaviour
 
     private void ActivateArtifacts()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetKeyDown(KeyCode.Alpha4))
         {
             ToggleArtifact(ResourceType.Lumber);
         }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
+        if (Input.GetKeyDown(KeyCode.Alpha5))
         {
             ToggleArtifact(ResourceType.Wheat);
         }
-        if (Input.GetKeyDown(KeyCode.Alpha3))
+        if (Input.GetKeyDown(KeyCode.Alpha6))
         {
             ToggleArtifact(ResourceType.Iron);
         }

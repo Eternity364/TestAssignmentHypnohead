@@ -12,12 +12,10 @@ public class Grid : MonoBehaviour
     [SerializeField] private int referenceSize = 8;
     [SerializeField] private int width = 8;
     [SerializeField] private int height = 8;
-    [SerializeField] private List<ResourceModificator> resourceModificatorTypes;
-    [SerializeField] private List<int> zoneWidths = new List<int> { 1, 1, 999 };
+    [SerializeField] private List<ResourceZoneParameters> resourceZoneParameters;
 
     public UnityAction OnItemsNumberChanged;
     public IReadOnlyList<Item> Items => items.AsReadOnly();
-    public IReadOnlyList<ResourceModificator> ResourceModificators => resourceModificatorTypes.AsReadOnly();
     public Dictionary<Item, Vector2Int> ResourceCells => new Dictionary<Item, Vector2Int>(resourceCells);
 
     private List<Transform> tiles = new List<Transform>();
@@ -31,7 +29,14 @@ public class Grid : MonoBehaviour
     private float lastCellSize;
     private int lastWidth;
     private int lastHeight;
-    bool destroyBlock = false;
+    private bool destroyBlock = false;
+
+    [Serializable]
+    private struct ResourceZoneParameters
+    {
+        public ResourceModificator modificator;
+        public int width;
+    }
 
     public void AddItem(Item item, Vector2Int cell)
     {
@@ -294,19 +299,11 @@ public class Grid : MonoBehaviour
         int tilesCount = width * height;
         resourceModificators.Capacity = tilesCount;
 
-        if (resourceModificatorTypes == null || resourceModificatorTypes.Count == 0)
-        {
-            Debug.LogWarning("No resourceModificatorTypes defined.");
-            for (int i = 0; i < tilesCount; i++)
-                resourceModificators.Add(new ResourceModificator());
-            return;
-        }
-
         List<int> cum = new List<int>();
         int sum = 0;
-        for (int i = 0; i < resourceModificatorTypes.Count; i++)
+        for (int i = 0; i < resourceZoneParameters.Count; i++)
         {
-            int w = (i < zoneWidths.Count) ? Mathf.Max(0, zoneWidths[i]) : 0;
+            int w = (i < resourceZoneParameters.Count) ? Mathf.Max(0, resourceZoneParameters[i].width) : 0;
             sum += w;
             cum.Add(sum);
         }
@@ -320,7 +317,7 @@ public class Grid : MonoBehaviour
             for (int y = 0; y < height; y++)
             {
                 int ring = Mathf.Min(Mathf.Min(x, y), Mathf.Min(width - 1 - x, height - 1 - y));
-                int typeIndex = resourceModificatorTypes.Count - 1;
+                int typeIndex = resourceZoneParameters.Count - 1;
 
                 if (!zeroCoverage)
                 {
@@ -334,7 +331,7 @@ public class Grid : MonoBehaviour
                     }
                 }
 
-                ResourceModificator chosen = resourceModificatorTypes[typeIndex];
+                ResourceModificator chosen = resourceZoneParameters[typeIndex].modificator;
                 resourceModificators.Add(chosen);
             }
         }
