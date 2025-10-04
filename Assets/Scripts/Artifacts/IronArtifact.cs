@@ -20,7 +20,7 @@ public class IronArtifact : BaseArtifact
                 grid.RemoveItem(args.item, true);
             else {
                 args.priceEntry.amount *= multiplier;
-                args.OnModify(args.priceEntry, args.iconPosition, false);
+                args.OnModify(args.priceEntry, args.iconPosition, new Vector2Int(0, 1));
             }
         }
     }

@@ -35,6 +35,7 @@ public class PurchaseManager : MonoBehaviour
 
     private bool TryToPay(List<PriceEntry> priceEntries)
     {
+        return true;
         if (resourceManager.CheckIfEnoughResources(priceEntries))
         {
             resourceManager.ChangeResourceAmountBy(priceEntries);
@@ -56,7 +57,7 @@ public class PurchaseManager : MonoBehaviour
             {
                 BaseArtifact artifact = purchasableArtifacts.ElementAt(UnityEngine.Random.Range(0, purchasableArtifacts.Count));
                 purchasedArtifacts.Add(artifact);
-                resourceManager.ToggleArtifact(artifact.AffectedType);
+                resourceManager.ToggleArtifact(artifact);
             }
             else
                 itemField.CreateNewItem();

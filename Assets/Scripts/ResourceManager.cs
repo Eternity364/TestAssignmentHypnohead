@@ -22,6 +22,7 @@ public class ResourceManager : MonoBehaviour
     [SerializeField] private Grid grid;
     [SerializeField] private ItemFactory itemFactory;
     [SerializeField] private CommonParameters commonParameters;
+    [SerializeField] private ArtifactsPanel artifactsPanel;
     [SerializeField] private List<BaseArtifact> artifacts = new List<BaseArtifact>();
 
     public HashSet<BaseArtifact> Artifacts => new HashSet<BaseArtifact>(artifactsSet);
@@ -32,18 +33,25 @@ public class ResourceManager : MonoBehaviour
     private HashSet<BaseArtifact> artifactsSet = new HashSet<BaseArtifact>();
     private Dictionary<ResourceType, float> resources = new Dictionary<ResourceType, float>();
     private Dictionary<Item, float> gatherCurrentDelays = new Dictionary<Item, float>();
+    private Dictionary<BaseArtifact, float> standaloneArtifactsCurrentDelays = new Dictionary<BaseArtifact, float>();
     private Dictionary<ResourceType, BaseArtifact> artifactByType = new Dictionary<ResourceType, BaseArtifact>();
     private HashSet<BaseArtifact> activeArtifacts = new HashSet<BaseArtifact>();
     private List<PriceEntry> priceEntries = new();
 
-    public void ToggleArtifact(ResourceType resourceType)
+    public void ToggleArtifact(BaseArtifact artifact)
     {
-        BaseArtifact artifact = artifactByType[resourceType];
         bool active = activeArtifacts.Contains(artifact);
         if (active)
+        {
             activeArtifacts.Remove(artifact);
+            standaloneArtifactsCurrentDelays.Remove(artifact);
+        }
         else
+        {
             activeArtifacts.Add(artifact);
+            if (artifact.IsStandalone)
+                standaloneArtifactsCurrentDelays[artifact] = commonParameters.ResourceGatherRate;
+        }
         OnArtifactToggle?.Invoke(artifact, !active);
     }
 
@@ -88,8 +96,6 @@ public class ResourceManager : MonoBehaviour
             artifactsSet.Add(artifact);
             activeArtifacts.Remove(artifact);
         }
-        IronArtifact ironArtifact = (IronArtifact)artifactByType[ResourceType.Iron];
-        ironArtifact.grid = grid;
         grid.OnItemsNumberChanged += OnItemCountChanged;
     }
 
@@ -118,6 +124,7 @@ public class ResourceManager : MonoBehaviour
         {
             ProcessResourceItem(item);
         });
+        ProcessStandaloneArtifacts();
         //ActivateArtifacts();
     }
 
@@ -128,50 +135,74 @@ public class ResourceManager : MonoBehaviour
         {
             PriceEntry priceEntry = new PriceEntry { resourceType = item.ResourceType, amount = 1 };
 
+            bool affectedByArtifact = false;
             foreach (BaseArtifact artifact in activeArtifacts)
             {
+                if (artifact.IsStandalone) continue;
                 artifact.Modify(new ArtifactArgs
                 {
                     item = item,
                     iconPosition = grid.GetResourceCellPosition(item),
                     priceEntry = priceEntry,
-                    OnModify = GatherResource
+                    OnModify = GatherResource,
+                    RemoveItem = (item) =>
+                        {
+                            grid.RemoveItem(item, true);
+                        }
                 });
+                affectedByArtifact = item.ResourceType == artifact.AffectedType || affectedByArtifact;
             }
 
-            GatherResource(priceEntry, grid.GetResourceCellPosition(item), false);
+            if (!affectedByArtifact)
+                GatherResource(priceEntry, grid.GetResourceCellPosition(item), new Vector2Int(0, 1));
             ResetGatherDelay(item);
         }
     }
 
-    private void GatherResource(PriceEntry priceEntry, Vector3 position, bool alternativeMode)
+    private void ProcessStandaloneArtifacts()
+    {
+        PriceEntry priceEntry = new PriceEntry { amount = 1 };
+
+        foreach (BaseArtifact artifact in activeArtifacts)
+        {
+            if (!artifact.IsStandalone) continue;
+
+            standaloneArtifactsCurrentDelays[artifact] -= Time.deltaTime * GameSpeedController.Instance.Multiplier;
+            if (standaloneArtifactsCurrentDelays[artifact] < 0)
+            {
+                Item item = null;
+                if (grid.Items.Count > 0)
+                    item = grid.Items[Random.Range(0, grid.Items.Count)];
+
+                artifact.Modify(new ArtifactArgs
+                {
+                    item = item,
+                    iconPosition = artifactsPanel.GetIconPosition(artifact),
+                    priceEntry = priceEntry,
+                    OnModify = GatherResource,
+                    GetArtifactsNumber = () => activeArtifacts.Count,
+                    RemoveItem = (item) =>
+                        {
+                            grid.RemoveItem(item, true);
+                        }
+                });
+                standaloneArtifactsCurrentDelays[artifact] = commonParameters.ResourceGatherRate;
+            }
+        }
+    }
+
+    private void GatherResource(PriceEntry priceEntry, Vector3 position, Vector2Int animationDirection)
     {
         priceEntries.Clear();
         priceEntries.Add(priceEntry);
         ChangeResourceAmountBy(priceEntries);
-        CreateOnResourceChangeAnimation(priceEntry, position, alternativeMode);
+        CreateOnResourceChangeAnimation(priceEntry, position, animationDirection);
         OnResourceChanged?.Invoke(
                 new PriceEntry()
                 {
                     resourceType = priceEntry.resourceType,
                     amount = (int)resources[priceEntry.resourceType]
                 });
-    }
-
-    private void ActivateArtifacts()
-    {
-        if (Input.GetKeyDown(KeyCode.Alpha4))
-        {
-            ToggleArtifact(ResourceType.Lumber);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            ToggleArtifact(ResourceType.Wheat);
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha6))
-        {
-            ToggleArtifact(ResourceType.Iron);
-        }
     }
 
     private void ResetGatherDelay(Item item)
@@ -186,18 +217,13 @@ public class ResourceManager : MonoBehaviour
         gatherCurrentDelays[item] = delay;
     }
 
-    private void CreateOnResourceChangeAnimation(PriceEntry priceEntry, Vector3 position, bool alternativeMode = false)
+    private void CreateOnResourceChangeAnimation(PriceEntry priceEntry, Vector3 position, Vector2Int animationDirection)
     {
         Icon icon = itemFactory.CreateResourceIcon(priceEntry.resourceType);
         Transform animation = icon.transform;
         icon.SetTextActive(true, "+" + priceEntry.amount.ToString());
 
-        Vector3 finishPosition = position + Vector3.up * grid.GetCellSize();
-        if (alternativeMode)
-        {
-            if (priceEntry.resourceType == ResourceType.Wheat)
-                finishPosition += Vector3.left * grid.GetCellSize();
-        }
+        Vector3 finishPosition = position + new Vector3(animationDirection.x, animationDirection.y, 0) * grid.GetCellSize();
 
         animation.SetParent(transform);
         position.z = -0.001f;

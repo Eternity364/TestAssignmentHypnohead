@@ -14,11 +14,11 @@ public class LumberArtifact : BaseArtifact
         if (args.item.ResourceType == AffectedType)
         {
             
-            args.OnModify(args.priceEntry, args.iconPosition, false);
+            args.OnModify(args.priceEntry, args.iconPosition, new Vector2Int(0, 1));
             if  (Random.value < chance)
             {
                 args.priceEntry.resourceType = ResourceType.Wheat;
-                args.OnModify(args.priceEntry, args.iconPosition, true);
+                args.OnModify(args.priceEntry, args.iconPosition, new Vector2Int(-1, 1));
             }
         }
     }

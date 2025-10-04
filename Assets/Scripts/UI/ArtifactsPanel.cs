@@ -1,11 +1,29 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class ArtifactsPanel : MonoBehaviour
 {
-    [SerializeField] private List<GameObject> artifactIcons = new List<GameObject>();
+    [SerializeField] private List<ArtifactIcon> artifactIcons = new List<ArtifactIcon>();
     [SerializeField] private ResourceManager resourceManager;
+
+    public Vector3 GetIconPosition(BaseArtifact artifact)
+    {
+        foreach (var artifactIcon in artifactIcons)
+        {
+            if (artifactIcon.artifact == artifact)
+            {
+                float depth = Vector3.Distance(Camera.main.transform.position, Vector3.zero);
+                Vector3 screenPos = artifactIcon.icon.transform.position;
+                Vector3 worldPos = Camera.main.ScreenToWorldPoint(
+                    new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane)
+                );
+                return worldPos;
+            }
+        }
+        return Vector3.zero;
+    }
 
     private void Start()
     {
@@ -15,21 +33,24 @@ public class ArtifactsPanel : MonoBehaviour
     private void OnArtifactToggle(BaseArtifact artifact, bool isActive)
     {
         int index = -1;
-        switch (artifact.AffectedType)
+        for (int i = 0; i < artifactIcons.Count; i++)
         {
-            case ResourceType.Lumber:
-                index = 0;
+            if (artifactIcons[i].artifact == artifact)
+            {
+                index = i;
                 break;
-            case ResourceType.Wheat:
-                index = 1;
-                break;
-            case ResourceType.Iron:
-                index = 2;
-                break;
+            }
         }
         if (index != -1 && index < artifactIcons.Count)
         {
-            artifactIcons[index].SetActive(isActive);
+            artifactIcons[index].icon.SetActive(isActive);
         }
+    }
+
+    [Serializable]
+    private struct ArtifactIcon
+    {
+        public BaseArtifact artifact;
+        public GameObject icon;
     }
 }
