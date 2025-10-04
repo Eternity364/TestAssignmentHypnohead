@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using DG.Tweening;
 using TMPro;
@@ -22,14 +23,28 @@ public class ResourceManager : MonoBehaviour
     [SerializeField] private CommonParameters commonParameters;
     [SerializeField] private List<BaseArtifact> artifacts = new List<BaseArtifact>();
 
+    public HashSet<BaseArtifact> Artifacts => new HashSet<BaseArtifact>(artifactsSet);
     public UnityAction<BaseArtifact, bool> OnArtifactToggle;
-    public UnityAction<ResourceType, float> OnResourceGathered;
+    public UnityAction<ResourceType, float> OnResourceChanged;
 
+
+    private HashSet<BaseArtifact> artifactsSet = new HashSet<BaseArtifact>();
     private Dictionary<ResourceType, float> resources = new Dictionary<ResourceType, float>();
     private Dictionary<Item, float> gatherCurrentDelays = new Dictionary<Item, float>();
     private Dictionary<ResourceType, BaseArtifact> artifactByType = new Dictionary<ResourceType, BaseArtifact>();
     private HashSet<BaseArtifact> activeArtifacts = new HashSet<BaseArtifact>();
     private Dictionary<ResourceType, float> produced = new Dictionary<ResourceType, float>();
+
+    public void ToggleArtifact(ResourceType resourceType)
+    {
+        BaseArtifact artifact = artifactByType[resourceType];
+        bool active = activeArtifacts.Contains(artifact);
+        if (active)
+            activeArtifacts.Remove(artifact);
+        else
+            activeArtifacts.Add(artifact);
+        OnArtifactToggle?.Invoke(artifact, !active);
+    }
 
     void Start()
     {
@@ -40,6 +55,7 @@ public class ResourceManager : MonoBehaviour
         foreach (BaseArtifact artifact in artifacts)
         {
             artifactByType[artifact.AffectedType] = artifact;
+            artifactsSet.Add(artifact);
             activeArtifacts.Remove(artifact);
         }
         IronArtifact ironArtifact = (IronArtifact)artifactByType[ResourceType.Iron];
@@ -72,7 +88,7 @@ public class ResourceManager : MonoBehaviour
         {
             ProcessResourceItem(item);
         });
-        ActivateArtifacts();
+        //ActivateArtifacts();
     }
 
     private void ProcessResourceItem(Item item)
@@ -108,7 +124,7 @@ public class ResourceManager : MonoBehaviour
     {
         resources[resourceType] += amount;
         CreateOnResourceChangeAnimation(resourceType, position, amount, alternativeMode);
-        OnResourceGathered?.Invoke(resourceType, resources[resourceType]);
+        OnResourceChanged?.Invoke(resourceType, resources[resourceType]);
     }
 
     private void ActivateArtifacts()
@@ -125,17 +141,6 @@ public class ResourceManager : MonoBehaviour
         {
             ToggleArtifact(ResourceType.Iron);
         }
-    }
-
-    private void ToggleArtifact(ResourceType resourceType)
-    {
-        BaseArtifact artifact = artifactByType[resourceType];
-        bool active = activeArtifacts.Contains(artifact);
-        if (active)
-            activeArtifacts.Remove(artifact);
-        else
-            activeArtifacts.Add(artifact);
-        OnArtifactToggle?.Invoke(artifact, !active);
     }
 
     private void ResetGatherDelay(Item item)

@@ -14,7 +14,7 @@ public class ResourcePanel : MonoBehaviour
 
     private void Start()
     {
-        resourceManager.OnResourceGathered += OnResourceGathered;
+        resourceManager.OnResourceChanged += OnResourceGathered;
         Assert.AreEqual(resourceTexts.Count, System.Enum.GetValues(typeof(ResourceType)).Length);
         resourceTextsArray = new ResourceTexts[resourceTexts.Count];
         for (int i = 0; i < resourceTexts.Count; i++)
