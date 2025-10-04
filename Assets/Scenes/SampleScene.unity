@@ -265,6 +265,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resourceManager: {fileID: 35586405}
   itemField: {fileID: 340820230}
+  multiplierGrowthRate: 1.2
+  initialPrice:
+  - resourceType: 0
+    amount: -5
+  - resourceType: 2
+    amount: -5
+  - resourceType: 1
+    amount: -5
 --- !u!1 &116072635
 GameObject:
   m_ObjectHideFlags: 0
@@ -1197,7 +1205,7 @@ Transform:
   m_GameObject: {fileID: 1296058916}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -0.001}
   m_LocalScale: {x: 0.88, y: 0.88, z: 0.88}
   m_ConstrainProportionsScale: 1
   m_Children: []

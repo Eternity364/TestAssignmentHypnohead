@@ -12,7 +12,8 @@ public class WheatArtifact : BaseArtifact
     {
         if (args.item.ResourceType == AffectedType)
         {
-            args.OnModify(AffectedType, args.iconPosition, args.item.Size * (int)args.producedResources[AffectedType], false);
+            args.priceEntry.amount *= args.item.Size;
+            args.OnModify(args.priceEntry, args.iconPosition, false);
         }
     }
 }

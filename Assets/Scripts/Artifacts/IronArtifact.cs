@@ -19,7 +19,8 @@ public class IronArtifact : BaseArtifact
             if (currChance)
                 grid.RemoveItem(args.item, true);
             else {
-                args.OnModify(AffectedType, args.iconPosition, multiplier * (int)args.producedResources[AffectedType], false);
+                args.priceEntry.amount *= multiplier;
+                args.OnModify(args.priceEntry, args.iconPosition, false);
             }
         }
     }

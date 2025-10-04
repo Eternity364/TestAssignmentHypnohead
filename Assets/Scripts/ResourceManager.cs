@@ -6,6 +6,7 @@ using DG.Tweening;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
@@ -25,7 +26,7 @@ public class ResourceManager : MonoBehaviour
 
     public HashSet<BaseArtifact> Artifacts => new HashSet<BaseArtifact>(artifactsSet);
     public UnityAction<BaseArtifact, bool> OnArtifactToggle;
-    public UnityAction<ResourceType, float> OnResourceChanged;
+    public UnityAction<PriceEntry> OnResourceChanged;
 
 
     private HashSet<BaseArtifact> artifactsSet = new HashSet<BaseArtifact>();
@@ -33,7 +34,7 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<Item, float> gatherCurrentDelays = new Dictionary<Item, float>();
     private Dictionary<ResourceType, BaseArtifact> artifactByType = new Dictionary<ResourceType, BaseArtifact>();
     private HashSet<BaseArtifact> activeArtifacts = new HashSet<BaseArtifact>();
-    private Dictionary<ResourceType, float> produced = new Dictionary<ResourceType, float>();
+    private List<PriceEntry> priceEntries = new();
 
     public void ToggleArtifact(ResourceType resourceType)
     {
@@ -44,6 +45,35 @@ public class ResourceManager : MonoBehaviour
         else
             activeArtifacts.Add(artifact);
         OnArtifactToggle?.Invoke(artifact, !active);
+    }
+
+    // Assumes that _priceEntries contains negative values
+    public bool CheckIfEnoughResources(List<PriceEntry> _priceEntries)
+    {
+        for (int i = 0; i < _priceEntries.Count; i++)
+        {
+            Assert.IsTrue(_priceEntries[i].amount < 0);
+            if (resources[_priceEntries[i].resourceType] < -_priceEntries[i].amount)
+                return false;
+
+        }
+        return true;
+    }
+
+    public void ChangeResourceAmountBy(List<PriceEntry> _priceEntries)
+    {
+        for (int i = 0; i < _priceEntries.Count; i++)
+        {
+            ResourceType resourceType = _priceEntries[i].resourceType;
+            int amount = _priceEntries[i].amount;
+            resources[resourceType] += amount;
+            OnResourceChanged?.Invoke(
+                new PriceEntry()
+                {
+                    resourceType = resourceType,
+                    amount = (int)resources[resourceType]
+                });
+        }
     }
 
     void Start()
@@ -96,8 +126,7 @@ public class ResourceManager : MonoBehaviour
         gatherCurrentDelays[item] -= Time.deltaTime * GameSpeedController.Instance.Multiplier;
         if (gatherCurrentDelays[item] <= 0)
         {
-            produced.Clear();
-            produced[item.ResourceType] = 1;
+            PriceEntry priceEntry = new PriceEntry { resourceType = item.ResourceType, amount = 1 };
 
             foreach (BaseArtifact artifact in activeArtifacts)
             {
@@ -105,26 +134,28 @@ public class ResourceManager : MonoBehaviour
                 {
                     item = item,
                     iconPosition = grid.GetResourceCellPosition(item),
-                    producedResources = produced,
+                    priceEntry = priceEntry,
                     OnModify = GatherResource
                 });
             }
 
-            foreach (var kvp in produced)
-            {
-                if (!activeArtifacts.Contains(artifactByType[kvp.Key]))
-                    GatherResource(kvp.Key, grid.GetResourceCellPosition(item), (int)kvp.Value, false);
-            }
-
+            GatherResource(priceEntry, grid.GetResourceCellPosition(item), false);
             ResetGatherDelay(item);
         }
     }
 
-    private void GatherResource(ResourceType resourceType, Vector3 position, int amount, bool alternativeMode)
+    private void GatherResource(PriceEntry priceEntry, Vector3 position, bool alternativeMode)
     {
-        resources[resourceType] += amount;
-        CreateOnResourceChangeAnimation(resourceType, position, amount, alternativeMode);
-        OnResourceChanged?.Invoke(resourceType, resources[resourceType]);
+        priceEntries.Clear();
+        priceEntries.Add(priceEntry);
+        ChangeResourceAmountBy(priceEntries);
+        CreateOnResourceChangeAnimation(priceEntry, position, alternativeMode);
+        OnResourceChanged?.Invoke(
+                new PriceEntry()
+                {
+                    resourceType = priceEntry.resourceType,
+                    amount = (int)resources[priceEntry.resourceType]
+                });
     }
 
     private void ActivateArtifacts()
@@ -155,16 +186,16 @@ public class ResourceManager : MonoBehaviour
         gatherCurrentDelays[item] = delay;
     }
 
-    private void CreateOnResourceChangeAnimation(ResourceType resourceType, Vector3 position, int amount, bool alternativeMode = false)
+    private void CreateOnResourceChangeAnimation(PriceEntry priceEntry, Vector3 position, bool alternativeMode = false)
     {
-        Icon icon = itemFactory.CreateResourceIcon(resourceType);
+        Icon icon = itemFactory.CreateResourceIcon(priceEntry.resourceType);
         Transform animation = icon.transform;
-        icon.SetTextActive(true, "+" + amount.ToString());
+        icon.SetTextActive(true, "+" + priceEntry.amount.ToString());
 
         Vector3 finishPosition = position + Vector3.up * grid.GetCellSize();
         if (alternativeMode)
         {
-            if (resourceType == ResourceType.Wheat)
+            if (priceEntry.resourceType == ResourceType.Wheat)
                 finishPosition += Vector3.left * grid.GetCellSize();
         }
 

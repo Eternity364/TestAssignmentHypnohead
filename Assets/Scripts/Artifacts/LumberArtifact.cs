@@ -13,10 +13,12 @@ public class LumberArtifact : BaseArtifact
     {
         if (args.item.ResourceType == AffectedType)
         {
-            args.OnModify(AffectedType, args.iconPosition, (int)args.producedResources[AffectedType], false);
+            
+            args.OnModify(args.priceEntry, args.iconPosition, false);
             if  (Random.value < chance)
             {
-                args.OnModify(ResourceType.Wheat, args.iconPosition, (int)args.producedResources[ResourceType.Wheat], true);
+                args.priceEntry.resourceType = ResourceType.Wheat;
+                args.OnModify(args.priceEntry, args.iconPosition, true);
             }
         }
     }

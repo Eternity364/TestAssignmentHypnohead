@@ -25,9 +25,9 @@ public class ResourcePanel : MonoBehaviour
         }
     }
 
-    private void OnResourceGathered(ResourceType resourceType, float amount)
+    private void OnResourceGathered(PriceEntry priceEntry)
     {
-        resourceTextsArray[(int)resourceType].text.text = amount.ToString();
+        resourceTextsArray[(int)priceEntry.resourceType].text.text = priceEntry.amount.ToString();
     }
 
     [Serializable]
