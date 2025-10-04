@@ -23,7 +23,6 @@ public class ResourceManager : MonoBehaviour
     [SerializeField] private ItemFactory itemFactory;
     [SerializeField] private CommonParameters commonParameters;
     [SerializeField] private ArtifactsPanel artifactsPanel;
-    [SerializeField] private List<BaseArtifact> artifacts = new List<BaseArtifact>();
 
     public HashSet<BaseArtifact> Artifacts => new HashSet<BaseArtifact>(artifactsSet);
     public UnityAction<BaseArtifact, bool> OnArtifactToggle;
@@ -90,7 +89,7 @@ public class ResourceManager : MonoBehaviour
         {
             resources[(ResourceType)i] = 0;
         }
-        foreach (BaseArtifact artifact in artifacts)
+        foreach (BaseArtifact artifact in artifactsPanel.GetArtifacts())
         {
             artifactByType[artifact.AffectedType] = artifact;
             artifactsSet.Add(artifact);

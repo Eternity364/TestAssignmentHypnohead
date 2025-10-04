@@ -17,7 +17,7 @@ public class IronArtifact : BaseArtifact
         {
             bool currChance = Random.value < chance;
             if (currChance)
-                grid.RemoveItem(args.item, true);
+                args.RemoveItem(args.item);
             else {
                 args.priceEntry.amount *= multiplier;
                 args.OnModify(args.priceEntry, args.iconPosition, new Vector2Int(0, 1));

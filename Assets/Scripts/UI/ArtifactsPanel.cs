@@ -25,6 +25,16 @@ public class ArtifactsPanel : MonoBehaviour
         return Vector3.zero;
     }
 
+    public List<BaseArtifact> GetArtifacts()
+    {
+        List<BaseArtifact> list = new();
+        foreach (var artifactIcon in artifactIcons)
+        {
+            list.Add(artifactIcon.artifact);
+        }
+        return list;
+    }
+
     private void Start()
     {
         resourceManager.OnArtifactToggle += OnArtifactToggle;
